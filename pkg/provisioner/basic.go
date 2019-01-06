@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	diskfs "github.com/diskfs/go-diskfs"
+	"github.com/diskfs/go-diskfs/partition/mbr"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -65,6 +67,28 @@ func (prov *BasicProvisioner) UpdateNoobsCache() error {
 	}
 
 	return nil
+}
+
+func (prov *BasicProvisioner) PartitionDisk(device string) error {
+	disk, err := diskfs.Open(device)
+	if err != nil {
+		return err
+	}
+
+	table := &mbr.Table{
+		LogicalSectorSize:  512,
+		PhysicalSectorSize: 512,
+		Partitions: []*mbr.Partition{
+			{
+				Bootable: false,
+				Type:     mbr.Fat32LBA,
+				Start:    0,
+				Size:     uint32(disk.Size),
+			},
+		},
+	}
+
+	return disk.Partition(table)
 }
 
 func (prov *BasicProvisioner) ensureNoobsCacheDirExists() error {

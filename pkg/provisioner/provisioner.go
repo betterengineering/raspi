@@ -13,4 +13,6 @@ type Provisioner interface {
 	// UpdateNoobsCache will download the latest version of NOOBs to the local
 	// cache.
 	UpdateNoobsCache() error
+
+	PartitionDisk(device string) error
 }
